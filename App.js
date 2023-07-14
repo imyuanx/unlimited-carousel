@@ -3,18 +3,13 @@ import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 const CARD_WIDTH = 300;
 const CARD_GAP = 10;
-const CARD_NUM = 3;
+const CARD_NUM = 5;
 const CAROUSEL_WIDTH = CARD_NUM * CARD_WIDTH + (CARD_NUM - 1) * CARD_GAP;
 
-// TODO: refactor base X
-const FIRST_X = 0;
-const SECOND_X = CAROUSEL_WIDTH / 2 - CARD_WIDTH / 2;
-const THIRD_X = CAROUSEL_WIDTH - CARD_WIDTH;
-
-// const CARD_BASE_X = Array.from({ length: CARD_NUM }, (v, k) => {
-//   const gap = k !== 0 ? CARD_GAP : 0;
-//   return k * CARD_WIDTH + gap;
-// });
+const CARD_BASE_X = Array.from({ length: CARD_NUM }, (_, k) => {
+  const gap = k !== 0 ? CARD_GAP * k : 0;
+  return k * CARD_WIDTH + gap;
+});
 
 export default function App() {
   const [isTouching, setIsTouching] = useState(false);
@@ -55,9 +50,9 @@ export default function App() {
     setIsTouching(false);
     setTouchBeginX(0);
     setTouchX(0);
-    if (touchOffset > 80 && page > -1) {
+    if (touchOffset > 80 && page > Math.floor(CARD_NUM / 2) * -1) {
       setPage(page - 1);
-    } else if (touchOffset < -80 && page < 1) {
+    } else if (touchOffset < -80 && page < Math.floor(CARD_NUM / 2)) {
       setPage(page + 1);
     }
   }
@@ -65,54 +60,25 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={[styles.carousel]}>
-        <Animated.View
-          style={[
-            styles.page,
-            {
-              borderColor: "black",
-              left: Animated.add(offsetXAnim, FIRST_X),
-            },
-          ]}
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderGrant={onResponderGrant}
-          onResponderMove={onResponderMove}
-          onResponderEnd={onResponderEnd}
-        >
-          <Text style={styles.text}>Page 1</Text>
-        </Animated.View>
-        <Animated.View
-          style={[
-            styles.page,
-            {
-              borderColor: "black",
-              left: Animated.add(offsetXAnim, SECOND_X),
-            },
-          ]}
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderGrant={onResponderGrant}
-          onResponderMove={onResponderMove}
-          onResponderEnd={onResponderEnd}
-        >
-          <Text style={styles.text}>Page 2</Text>
-        </Animated.View>
-        <Animated.View
-          style={[
-            styles.page,
-            {
-              borderColor: "black",
-              left: Animated.add(offsetXAnim, THIRD_X),
-            },
-          ]}
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderGrant={onResponderGrant}
-          onResponderMove={onResponderMove}
-          onResponderEnd={onResponderEnd}
-        >
-          <Text style={styles.text}>Page 3</Text>
-        </Animated.View>
+        {CARD_BASE_X.map((item, index) => {
+          return (
+            <Animated.View
+              style={[
+                styles.page,
+                {
+                  left: Animated.add(offsetXAnim, item),
+                },
+              ]}
+              onStartShouldSetResponder={() => true}
+              onMoveShouldSetResponder={() => true}
+              onResponderGrant={onResponderGrant}
+              onResponderMove={onResponderMove}
+              onResponderEnd={onResponderEnd}
+            >
+              <Text style={styles.text}>Page {index + 1}</Text>
+            </Animated.View>
+          );
+        })}
       </View>
     </View>
   );
@@ -127,7 +93,7 @@ const styles = StyleSheet.create({
   },
   carousel: {
     position: "relative",
-    width: 930,
+    width: CAROUSEL_WIDTH,
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
@@ -143,6 +109,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     width: CARD_WIDTH,
     height: "80%",
+    borderColor: "black",
   },
   text: {
     fontSize: 18,
