@@ -42,7 +42,7 @@ export default function App() {
       duration,
       useNativeDriver: false,
     }).start();
-  }, [page, touchOffset, isTouching]);
+  }, [page, touchOffset, pageOffset, isTouching, ANIMATION_DURATION]);
 
   function onResponderGrant(e) {
     console.log("onResponderGrant");
