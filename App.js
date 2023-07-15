@@ -2,22 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 const DEFAULT_PAGE_INDEX = 0;
+const CARD_NUM = 5;
+
 const CARD_WIDTH = 300;
 const CARD_GAP = 10;
-const CARD_NUM = 5;
-const MIN_PAGE_INDEX = Math.floor(CARD_NUM / 2) * -1;
-const MAX_PAGE_INDEX = Math.floor(CARD_NUM / 2);
-const CAROUSEL_WIDTH = CARD_NUM * CARD_WIDTH + (CARD_NUM - 1) * CARD_GAP;
 
-const CARD_LIST = Array.from({ length: CARD_NUM }, (_, k) => {
-  const gap = k !== 0 ? CARD_GAP * k : 0;
-  const x = k * CARD_WIDTH + gap;
-  const pageIndex = k - Math.floor(CARD_NUM / 2) + DEFAULT_PAGE_INDEX;
-  return {
-    pageIndex,
-    x,
-  };
-});
+const CARD_FIRST_INDEX = 0;
+const CARD_LAST_INDEX = CARD_NUM - 1;
+
+const CAROUSEL_WIDTH = CARD_NUM * CARD_WIDTH + CARD_LAST_INDEX * CARD_GAP;
 
 const ANIMATION_DURATION = 150;
 const TOUCH_EFFECT_LENGTH = 80;
@@ -27,22 +20,30 @@ export default function App() {
   const [touchBeginX, setTouchBeginX] = useState(0);
   const [touchX, setTouchX] = useState(0);
   const [page, setPage] = useState(0);
+  const prePage = useRef(0);
   const touchOffset = useMemo(
     () => touchX - touchBeginX,
     [touchX, touchBeginX]
   );
-  const pageOffset = useMemo(() => page * CARD_WIDTH, [page, CARD_WIDTH]);
   const offsetXAnim = useRef(new Animated.Value(0)).current;
 
+  const CARD_LIST = useRef(
+    Array.from({ length: CARD_NUM }, (_, k) => {
+      const gap = k !== 0 ? CARD_GAP * k : 0;
+      const x = k * CARD_WIDTH + gap;
+      const pageIndex = k - Math.floor(CARD_NUM / 2) + DEFAULT_PAGE_INDEX;
+      return {
+        id: k,
+        sortIndex: k,
+        pageIndex,
+        x,
+      };
+    })
+  );
+
   useEffect(() => {
-    const duration = isTouching ? 0 : ANIMATION_DURATION;
-    Animated.timing(offsetXAnim, {
-      easing: Easing.linear,
-      toValue: touchOffset - pageOffset,
-      duration,
-      useNativeDriver: false,
-    }).start();
-  }, [page, touchOffset, pageOffset, isTouching, ANIMATION_DURATION]);
+    moveCard(false);
+  }, [touchOffset]);
 
   function onResponderGrant(e) {
     console.log("onResponderGrant");
@@ -56,28 +57,66 @@ export default function App() {
     setTouchX(e.nativeEvent.pageX);
   }
 
+  function moveCard(changePage, isNextPage) {
+    if (changePage) {
+      CARD_LIST.current = CARD_LIST.current.map(
+        ({ sortIndex, ...cardItem }) => {
+          let nextSortIndex =
+            sortIndex === CARD_LAST_INDEX ? CARD_FIRST_INDEX : sortIndex + 1;
+          if (isNextPage) {
+            nextSortIndex =
+              sortIndex === CARD_FIRST_INDEX ? CARD_LAST_INDEX : sortIndex - 1;
+          }
+          return {
+            ...cardItem,
+            sortIndex: nextSortIndex,
+            x: (CARD_WIDTH + CARD_GAP) * nextSortIndex,
+          };
+        }
+      );
+    }
+
+    const duration = isTouching ? 0 : ANIMATION_DURATION;
+    const pageOffset = changePage ? (isNextPage ? CARD_WIDTH : -CARD_WIDTH) : 0;
+    Animated.timing(offsetXAnim, {
+      easing: Easing.linear,
+      toValue: touchOffset + pageOffset,
+      duration,
+      useNativeDriver: false,
+    }).start();
+  }
+
   function onResponderEnd(e) {
     console.log("onResponderEnd");
     setIsTouching(false);
     setTouchBeginX(0);
     setTouchX(0);
-    if (touchOffset > TOUCH_EFFECT_LENGTH && page > MIN_PAGE_INDEX) {
-      setPage(page - 1);
-    } else if (
-      touchOffset < -1 * TOUCH_EFFECT_LENGTH &&
-      page < MAX_PAGE_INDEX
-    ) {
-      setPage(page + 1);
+    if (touchOffset > TOUCH_EFFECT_LENGTH) {
+      toLastPage();
+    } else if (touchOffset < -TOUCH_EFFECT_LENGTH) {
+      toNextPage();
     }
+  }
+
+  function toLastPage() {
+    prePage.current = page;
+    setPage(page - 1);
+    moveCard(true, false);
+  }
+
+  function toNextPage() {
+    prePage.current = page;
+    setPage(page + 1);
+    moveCard(true, true);
   }
 
   return (
     <View style={styles.container}>
       <View style={[styles.carousel]}>
-        {CARD_LIST.map(({ pageIndex, x }, index) => {
+        {CARD_LIST.current.map(({ id, sortIndex, pageIndex, x }) => {
           return (
             <Animated.View
-              key={pageIndex}
+              key={sortIndex}
               style={[
                 styles.page,
                 {
@@ -91,6 +130,8 @@ export default function App() {
               onResponderEnd={onResponderEnd}
             >
               <Text style={styles.text}>Page {pageIndex}</Text>
+              <Text style={styles.text}>Sort Index {sortIndex}</Text>
+              <Text style={styles.text}>ID {id}</Text>
             </Animated.View>
           );
         })}
