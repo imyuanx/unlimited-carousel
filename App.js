@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 const DEFAULT_PAGE_INDEX = 0;
-const MIN_PAGE_INDEX = Math.floor(CARD_NUM / 2) * -1;
-const MAX_PAGE_INDEX = Math.floor(CARD_NUM / 2);
 const CARD_WIDTH = 300;
 const CARD_GAP = 10;
 const CARD_NUM = 5;
+const MIN_PAGE_INDEX = Math.floor(CARD_NUM / 2) * -1;
+const MAX_PAGE_INDEX = Math.floor(CARD_NUM / 2);
 const CAROUSEL_WIDTH = CARD_NUM * CARD_WIDTH + (CARD_NUM - 1) * CARD_GAP;
 
 const CARD_LIST = Array.from({ length: CARD_NUM }, (_, k) => {
