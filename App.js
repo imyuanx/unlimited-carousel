@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 const DEFAULT_PAGE_INDEX = 0;
+const MIN_PAGE_INDEX = Math.floor(CARD_NUM / 2) * -1;
+const MAX_PAGE_INDEX = Math.floor(CARD_NUM / 2);
 const CARD_WIDTH = 300;
 const CARD_GAP = 10;
 const CARD_NUM = 5;
@@ -17,6 +19,9 @@ const CARD_LIST = Array.from({ length: CARD_NUM }, (_, k) => {
   };
 });
 
+const ANIMATION_DURATION = 150;
+const TOUCH_EFFECT_LENGTH = 80;
+
 export default function App() {
   const [isTouching, setIsTouching] = useState(false);
   const [touchBeginX, setTouchBeginX] = useState(0);
@@ -30,7 +35,7 @@ export default function App() {
   const offsetXAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const duration = isTouching ? 0 : 150;
+    const duration = isTouching ? 0 : ANIMATION_DURATION;
     Animated.timing(offsetXAnim, {
       easing: Easing.linear,
       toValue: touchOffset - pageOffset,
@@ -56,9 +61,12 @@ export default function App() {
     setIsTouching(false);
     setTouchBeginX(0);
     setTouchX(0);
-    if (touchOffset > 80 && page > Math.floor(CARD_NUM / 2) * -1) {
+    if (touchOffset > TOUCH_EFFECT_LENGTH && page > MIN_PAGE_INDEX) {
       setPage(page - 1);
-    } else if (touchOffset < -80 && page < Math.floor(CARD_NUM / 2)) {
+    } else if (
+      touchOffset < -1 * TOUCH_EFFECT_LENGTH &&
+      page < MAX_PAGE_INDEX
+    ) {
       setPage(page + 1);
     }
   }
