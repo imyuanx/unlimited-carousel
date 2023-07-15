@@ -63,6 +63,7 @@ export default function App() {
         {CARD_BASE_X.map((item, index) => {
           return (
             <Animated.View
+              key={item}
               style={[
                 styles.page,
                 {
