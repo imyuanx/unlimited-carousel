@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
+const DEFAULT_PAGE_INDEX = 0;
 const CARD_WIDTH = 300;
 const CARD_GAP = 10;
 const CARD_NUM = 5;
 const CAROUSEL_WIDTH = CARD_NUM * CARD_WIDTH + (CARD_NUM - 1) * CARD_GAP;
 
-const CARD_BASE_X = Array.from({ length: CARD_NUM }, (_, k) => {
+const CARD_LIST = Array.from({ length: CARD_NUM }, (_, k) => {
   const gap = k !== 0 ? CARD_GAP * k : 0;
-  return k * CARD_WIDTH + gap;
+  const x = k * CARD_WIDTH + gap;
+  const pageIndex = k - Math.floor(CARD_NUM / 2) + DEFAULT_PAGE_INDEX;
+  return {
+    pageIndex,
+    x,
+  };
 });
 
 export default function App() {
@@ -60,14 +66,14 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={[styles.carousel]}>
-        {CARD_BASE_X.map((item, index) => {
+        {CARD_LIST.map(({ pageIndex, x }, index) => {
           return (
             <Animated.View
-              key={item}
+              key={pageIndex}
               style={[
                 styles.page,
                 {
-                  left: Animated.add(offsetXAnim, item),
+                  left: Animated.add(offsetXAnim, x),
                 },
               ]}
               onStartShouldSetResponder={() => true}
@@ -76,7 +82,7 @@ export default function App() {
               onResponderMove={onResponderMove}
               onResponderEnd={onResponderEnd}
             >
-              <Text style={styles.text}>Page {index + 1}</Text>
+              <Text style={styles.text}>Page {pageIndex}</Text>
             </Animated.View>
           );
         })}
