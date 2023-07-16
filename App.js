@@ -9,6 +9,7 @@ const CARD_GAP = 10;
 
 const CARD_FIRST_INDEX = 0;
 const CARD_LAST_INDEX = CARD_NUM - 1;
+const CARD_MEDIUM_INDEX = 2;
 
 const CAROUSEL_WIDTH = CARD_NUM * CARD_WIDTH + CARD_LAST_INDEX * CARD_GAP;
 
@@ -114,6 +115,11 @@ export default function App() {
     <View style={styles.container}>
       <View style={[styles.carousel]}>
         {CARD_LIST.current.map(({ id, sortIndex, pageIndex, x }) => {
+          // TODO: split to a component
+          const currentPage = useMemo(
+            () => page + sortIndex - CARD_MEDIUM_INDEX,
+            [page, sortIndex, CARD_MEDIUM_INDEX]
+          );
           return (
             <Animated.View
               key={sortIndex}
@@ -129,8 +135,7 @@ export default function App() {
               onResponderMove={onResponderMove}
               onResponderEnd={onResponderEnd}
             >
-              <Text style={styles.text}>Page {pageIndex}</Text>
-              <Text style={styles.text}>Sort Index {sortIndex}</Text>
+              <Text style={styles.text}>Page {currentPage}</Text>
               <Text style={styles.text}>ID {id}</Text>
             </Animated.View>
           );
