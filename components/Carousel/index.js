@@ -81,14 +81,7 @@ function Carousel({ renderItem: RenderItem, onPageChange }) {
   });
 
   return (
-    <GestureHandlerRootView
-      style={{
-        width: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-        flex: 1,
-      }}
-    >
+    <GestureHandlerRootView style={styles.container}>
       <PanGestureHandler onGestureEvent={onGestureEvent}>
         <Animated.View style={styles.carousel}>
           {CARD_LIST.current.map(
@@ -174,6 +167,12 @@ function Carousel({ renderItem: RenderItem, onPageChange }) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
   carousel: {
     position: "relative",
     width: CAROUSEL_WIDTH,
