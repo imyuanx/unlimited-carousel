@@ -130,10 +130,9 @@ function Carousel({ renderItem: RenderItem, onPageChange }) {
 
             return (
               <Animated.View key={id} style={[styles.page, animatedStyle]}>
-                <RenderItem pageIndex={id} />
+                <RenderItem pageIndex={currentPage} />
                 <Text style={styles.text}>ID: {id}</Text>
-                <Text style={styles.text}>Sort Index: {sortIndex}</Text>
-                <Text style={styles.text}>Current Page: {currentPage}</Text>
+                {/* <Text style={styles.text}>Sort Index: {sortIndex}</Text> */}
               </Animated.View>
             );
           })}
